@@ -352,8 +352,7 @@ function RoastCard({
       // Create a wrapper div for better styling of the captured image
       const captureWrapper = document.createElement("div");
       captureWrapper.style.padding = "20px";
-      // Use standard RGB colors instead of oklch
-      captureWrapper.style.backgroundColor = darkMode ? "#18181b" : "#FF5F1F";
+      captureWrapper.style.backgroundColor = darkMode ? "#18181b" : "#FF5F1F"; // Background color
       captureWrapper.style.borderRadius = "8px";
       captureWrapper.style.maxWidth = "600px";
 
@@ -363,7 +362,6 @@ function RoastCard({
       profileHeader.style.alignItems = "center";
       profileHeader.style.marginBottom = "15px";
       profileHeader.style.padding = "10px";
-      // Use rgba for transparency instead of modern color formats
       profileHeader.style.backgroundColor = darkMode
         ? "rgba(0,0,0,0.3)"
         : "rgba(255,255,255,0.3)";
@@ -434,7 +432,8 @@ function RoastCard({
       watermark.style.textAlign = "center";
       watermark.style.fontWeight = "bold";
       watermark.style.color = darkMode ? "#ffffff" : "#000000";
-      watermark.innerText = `RoastGram`;
+      watermark.style.opacity = "0.7"; // Make the watermark slightly transparent
+      watermark.innerText = `RoastGram by alangkun`; // Watermark text
 
       // Append elements to the wrapper
       captureWrapper.appendChild(profileHeader);
@@ -447,7 +446,6 @@ function RoastCard({
       // Use html2canvas to capture the element
       const canvas = await html2canvas(captureWrapper, {
         background: darkMode ? "#18181b" : "#FF5F1F",
-        // Higher resolution
         logging: false, // Disable logging to avoid console spam
         useCORS: true, // Enable CORS for images
       });
