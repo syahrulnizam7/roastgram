@@ -31,15 +31,16 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
           .loader::before {
             content: "";
             display: inline-block;
-            width: 48px;
-            height: 48px; /* Tetapkan tinggi tetap */
+            width: 48px; /* Ukuran lingkaran mata */
+            height: 48px; /* Ukuran lingkaran mata */
             background-color: #fff;
             background-image: radial-gradient(
               circle 14px,
-              #0d161b 100%,
+              /* Ukuran bola mata putih */ #0d161b 100%,
               transparent 0
             );
             background-repeat: no-repeat;
+            background-position: center; /* Posisi bola mata putih di tengah */
             border-radius: 50%;
             animation: eyeMove 10s infinite, blink 10s infinite;
           }
