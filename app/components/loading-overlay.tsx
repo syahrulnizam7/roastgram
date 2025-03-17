@@ -32,13 +32,15 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
             content: "";
             display: inline-block;
             width: 48px; /* Ukuran lingkaran mata */
-            height: 48px; /* Ukuran lingkaran mata */
+            aspect-ratio: 1 / 1;
+            height: auto; /* Ukuran lingkaran mata */
             background-color: #fff;
             background-image: radial-gradient(
               circle 14px,
               /* Ukuran bola mata putih */ #0d161b 100%,
               transparent 0
             );
+            border: 1px solid red;
             background-size: contain; /* Ukuran bola mata putih */
             background-repeat: no-repeat;
             background-position: center; /* Posisi bola mata putih di tengah */
