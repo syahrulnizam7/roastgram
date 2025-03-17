@@ -25,13 +25,13 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
           .loader-wrapper {
             position: relative;
             width: 108px;
-            height: 48px; /* Tetap menjaga tinggi */
+            height: 48px;
             display: flex;
             justify-content: space-between;
           }
           .loader {
             position: absolute;
-            width: 108px;
+            width: 100%;
             display: flex;
             justify-content: space-between;
           }
@@ -48,13 +48,14 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
               transparent 0
             );
             background-repeat: no-repeat;
+            background-position: center;
             border-radius: 50%;
             animation: eyeMove 10s infinite, blink 10s infinite;
           }
           @keyframes eyeMove {
             0%,
             10% {
-              background-position: 0px 0px;
+              background-position: center center;
             }
             13%,
             40% {
@@ -66,11 +67,11 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
             }
             73%,
             90% {
-              background-position: 0px 15px;
+              background-position: center 15px;
             }
             93%,
             100% {
-              background-position: 0px 0px;
+              background-position: center center;
             }
           }
           @keyframes blink {
