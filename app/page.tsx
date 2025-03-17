@@ -14,6 +14,7 @@ import { LoadingOverlay } from "./components/loading-overlay";
 import { useTheme } from "./hooks/use-theme";
 import { BackgroundPattern } from "./components/background-pattern";
 import { DecorationElements } from "./components/decoration-elements";
+import Footer from "./components/footer";
 
 export default function Home() {
   const [username, setUsername] = useState("");
@@ -138,6 +139,9 @@ export default function Home() {
           {loading && <LoadingOverlay stage={stage} darkMode={darkMode} />}
         </div>
       </div>
+
+      {/* Tambahkan Footer di sini */}
+      <Footer />
     </main>
   );
 }
