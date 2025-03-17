@@ -36,11 +36,11 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
             height: auto; /* Ukuran lingkaran mata */
             background-color: #fff;
             background-size: 40px 40px;
-            background-image: radial-gradient(
-              circle 14px,
-              #0d161b 100%,
-              transparent 100%
-            );
+            // background-image: radial-gradient(
+            //   circle 14px,
+            //   #0d161b 100%,
+            //   transparent 100%
+            // );
 
             background-repeat: no-repeat;
             background-position: center; /* Posisi bola mata putih di tengah */
