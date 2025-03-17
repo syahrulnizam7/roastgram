@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     siteName: "RoastGram",
     images: [
       {
-        url: "/roastgramlogo.png",
+        url: "/images/roastgramlogo.png",
         width: 1200,
         height: 630,
         alt: "RoastGram - AI Instagram Roasting",
