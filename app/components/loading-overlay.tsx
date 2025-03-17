@@ -16,22 +16,14 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
+      {/* Eye Blinking Animation */}
       <div className="relative mb-8">
-        {/* Eye Blinking Animation */}
-        <div className="loader-wrapper">
-          <span className="loader"></span>
-        </div>
+        <span className="loader"></span>
         <style jsx>{`
-          .loader-wrapper {
+          .loader {
             position: relative;
             width: 108px;
-            height: 48px;
-            display: flex;
-            justify-content: space-between;
-          }
-          .loader {
-            position: absolute;
-            width: 100%;
+            height: 48px; /* Tetapkan tinggi tetap */
             display: flex;
             justify-content: space-between;
           }
@@ -40,7 +32,7 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
             content: "";
             display: inline-block;
             width: 48px;
-            height: 48px;
+            height: 48px; /* Tetapkan tinggi tetap */
             background-color: #fff;
             background-image: radial-gradient(
               circle 14px,
@@ -48,30 +40,29 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
               transparent 0
             );
             background-repeat: no-repeat;
-            background-position: center;
             border-radius: 50%;
             animation: eyeMove 10s infinite, blink 10s infinite;
           }
           @keyframes eyeMove {
             0%,
             10% {
-              background-position: center center;
+              background-position: 0px 0px;
             }
             13%,
             40% {
-              background-position: -15px center;
+              background-position: -15px 0px;
             }
             43%,
             70% {
-              background-position: 15px center;
+              background-position: 15px 0px;
             }
             73%,
             90% {
-              background-position: center 15px;
+              background-position: 0px 15px;
             }
             93%,
             100% {
-              background-position: center center;
+              background-position: 0px 0px;
             }
           }
           @keyframes blink {
@@ -90,7 +81,7 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
             92%,
             98%,
             100% {
-              height: 48px;
+              transform: scaleY(1); /* Buka mata (normal) */
             }
             11%,
             21%,
@@ -99,12 +90,13 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
             71%,
             91%,
             99% {
-              height: 18px;
+              transform: scaleY(0.1); /* Kedip (mata tertutup) */
             }
           }
         `}</style>
       </div>
 
+      {/* Progress Bar */}
       <div className="text-center px-4">
         <p className="text-white text-lg md:text-xl font-bold">
           {stage === "scraping"
@@ -112,7 +104,8 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
             : "Memproses roast yang pedas... 🔥"}
         </p>
 
-        <motion.div className="w-48 md:w-64 h-1.5 md:h-2 bg-gray-700 rounded-full mx-auto mt-3 md:mt-4 overflow-hidden">
+        {/* Progress Bar Container */}
+        <div className="w-48 md:w-64 h-1.5 md:h-2 bg-gray-700 rounded-full mx-auto mt-3 md:mt-4 overflow-hidden">
           <motion.div
             className={`h-full ${darkMode ? "bg-yellow-400" : "bg-red-500"}`}
             initial={{ width: 0 }}
@@ -124,7 +117,7 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
               repeatType: "loop",
             }}
           />
-        </motion.div>
+        </div>
       </div>
     </motion.div>
   );
