@@ -40,7 +40,13 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
               /* Ukuran bola mata putih */ #0d161b 100%,
               transparent 0
             );
-            border: 1px solid red;
+            mask-image: radial-gradient(circle, white 50%, transparent 51%);
+            -webkit-mask-image: radial-gradient(
+              circle,
+              white 50%,
+              transparent 51%
+            );
+
             background-size: 100% 100%; /* Ukuran bola mata putih */
 
             background-repeat: no-repeat;
