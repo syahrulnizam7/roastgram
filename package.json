@@ -9,9 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@types/html2canvas": "^0.5.35",
     "apify-client": "^2.12.1",
     "axios": "^1.8.3",
     "framer-motion": "^12.5.0",
+    "html2canvas": "^1.4.1",
     "lucide-react": "^0.482.0",
     "next": "15.2.2",
     "react": "^19.0.0",

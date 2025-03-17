@@ -1,9 +1,19 @@
-// File: app/page.tsx
 "use client";
 
+import type React from "react";
+
 import { useState } from "react";
-import { InstagramProfile } from "@/types";
+import type { InstagramProfile } from "@/types";
 import { scrapeInstagramProfile, generateRoast } from "@/lib/api";
+import { useAnimationControls } from "framer-motion";
+import { ThemeToggle } from "./components/theme-toggle";
+import { Header } from "./components/header";
+import { InputForm } from "./components/input-form";
+import { ResultsSection } from "./components/results-section";
+import { LoadingOverlay } from "./components/loading-overlay";
+import { useTheme } from "./hooks/use-theme";
+import { BackgroundPattern } from "./components/background-pattern";
+import { DecorationElements } from "./components/decoration-elements";
 
 export default function Home() {
   const [username, setUsername] = useState("");
@@ -11,6 +21,14 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [roast, setRoast] = useState<string | null>(null);
   const [profileData, setProfileData] = useState<InstagramProfile | null>(null);
+  const [stage, setStage] = useState<
+    "idle" | "scraping" | "roasting" | "complete"
+  >("idle");
+  const [showResults, setShowResults] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const { darkMode, setDarkMode } = useTheme();
+
+  const flameControls = useAnimationControls();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,117 +42,101 @@ export default function Home() {
       setLoading(true);
       setError(null);
       setRoast(null);
+      setShowResults(false);
 
-      // Scrape profile Instagram
+      // Flame animation
+      flameControls.start({
+        scale: [1, 1.5, 1],
+        rotate: [0, 15, -15, 0],
+        transition: { duration: 0.5 },
+      });
+
+      // Scraping stage
+      setStage("scraping");
       const profile = await scrapeInstagramProfile(username);
       setProfileData(profile);
 
-      // Generate roast
+      // Roasting stage
+      setStage("roasting");
       const roastText = await generateRoast(username, profile);
       setRoast(roastText);
+
+      // Complete
+      setStage("complete");
+      setShowResults(true);
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
           : "Terjadi kesalahan saat memproses permintaan"
       );
+      setStage("idle");
     } finally {
       setLoading(false);
     }
   };
 
+  const resetForm = () => {
+    setShowResults(false);
+    setRoast(null);
+    setProfileData(null);
+    setUsername("");
+  };
+
+  const copyToClipboard = () => {
+    if (!roast) return;
+
+    navigator.clipboard.writeText(`Roast for @${username}:\n\n${roast}`);
+    setCopied(true);
+
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
+  };
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-800 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white/10 backdrop-blur-md rounded-xl shadow-xl p-6 text-white">
-        <h1 className="text-3xl font-bold text-center mb-6">
-          Instagram Roaster 🔥
-        </h1>
+    <main
+      className={`min-h-screen font-mono overflow-x-hidden transition-colors duration-300 ${
+        darkMode ? "bg-zinc-900" : "bg-[#FF5F1F]"
+      } relative`}
+    >
+      <BackgroundPattern darkMode={darkMode} />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex flex-col space-y-2">
-            <label htmlFor="username" className="text-sm font-medium">
-              Username Instagram
-            </label>
-            <div className="flex">
-              <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
-                @
-              </span>
-              <input
-                type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="flex-1 min-w-0 block w-full px-3 py-2 rounded-r-md border border-gray-300 bg-gray-50 text-gray-900 focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="username"
-              />
-            </div>
-          </div>
+      <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out disabled:opacity-50"
-          >
-            {loading ? "Memproses..." : "Roast! 🔥"}
-          </button>
-        </form>
+      <div className="relative w-full z-10">
+        <DecorationElements darkMode={darkMode} />
 
-        {error && (
-          <div className="mt-4 p-3 bg-red-500/30 border border-red-500 rounded-md">
-            <p className="text-sm">{error}</p>
-          </div>
-        )}
+        <Header
+          showResults={showResults}
+          resetForm={resetForm}
+          darkMode={darkMode}
+        />
 
-        {roast && (
-          <div className="mt-6 p-4 bg-black/30 rounded-md">
-            <h2 className="text-xl font-bold mb-2">Roast untuk @{username}</h2>
-            <p className="text-sm italic">{roast}</p>
-          </div>
-        )}
+        <div className="pt-20 md:pt-24 pb-8 md:pb-10 px-3 md:px-8">
+          {!showResults ? (
+            <InputForm
+              username={username}
+              setUsername={setUsername}
+              handleSubmit={handleSubmit}
+              loading={loading}
+              error={error}
+              darkMode={darkMode}
+              flameControls={flameControls}
+            />
+          ) : (
+            <ResultsSection
+              username={username}
+              profileData={profileData}
+              roast={roast}
+              darkMode={darkMode}
+              copied={copied}
+              copyToClipboard={copyToClipboard}
+            />
+          )}
 
-        {profileData && (
-          <div className="mt-6 p-4 bg-black/30 rounded-md">
-            <h2 className="text-xl font-bold mb-2">Profil yang di-roast:</h2>
-            <div className="flex items-center space-x-3 mb-2">
-              {profileData.profilePicUrl && (
-                // Gunakan img element biasa, bukan Image dari Next.js
-                <img
-                  src={profileData.profilePicUrl}
-                  alt={`${username}'s profile`}
-                  className="w-12 h-12 rounded-full object-cover"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    // Fallback jika gambar gagal dimuat
-                    e.currentTarget.src = "https://via.placeholder.com/48";
-                  }}
-                />
-              )}
-              <div>
-                <p className="font-medium">@{username}</p>
-                {profileData.fullName && (
-                  <p className="text-sm">{profileData.fullName}</p>
-                )}
-              </div>
-            </div>
-            {profileData.biography && (
-              <p className="text-sm mb-2">{profileData.biography}</p>
-            )}
-            <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div>
-                <p className="font-bold">{profileData.postsCount}</p>
-                <p>Posts</p>
-              </div>
-              <div>
-                <p className="font-bold">{profileData.followersCount}</p>
-                <p>Followers</p>
-              </div>
-              <div>
-                <p className="font-bold">{profileData.followsCount}</p>
-                <p>Following</p>
-              </div>
-            </div>
-          </div>
-        )}
+          {loading && <LoadingOverlay stage={stage} darkMode={darkMode} />}
+        </div>
       </div>
     </main>
   );

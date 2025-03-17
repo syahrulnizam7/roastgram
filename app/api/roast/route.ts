@@ -1,4 +1,3 @@
-// File: app/api/roast/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { scrapeInstagramProfile, generateRoast } from "@/lib/api";
 
