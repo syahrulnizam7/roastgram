@@ -41,7 +41,8 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
               transparent 0
             );
             border: 1px solid red;
-            background-size: contain; /* Ukuran bola mata putih */
+            background-size: 100% 100%; /* Ukuran bola mata putih */
+
             background-repeat: no-repeat;
             background-position: center; /* Posisi bola mata putih di tengah */
             border-radius: 50%;
