@@ -18,10 +18,7 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
     >
       {/* Eye Blinking Animation */}
       <div className="relative mb-8">
-        <div className="eye">
-          <div className="pupil"></div>
-        </div>
-
+        <span className="loader"></span>
         <style jsx>{`
           .loader {
             position: relative;
