@@ -25,7 +25,8 @@ export const metadata: Metadata = {
     "funny roast",
   ],
   openGraph: {
-    title: "RoastGram - Roast Your Instagram Profile with AI",
+    type: "website",
+    title: "RoastGram - Roast akun instagram anda dengan AI",
     description:
       "Biarkan profil Instagram Anda di-roasting oleh AI kami. Lucu, pedas, dan dijamin membakar ego Anda",
     url: "https://roastgram.vercel.app",
@@ -33,20 +34,15 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/images/roastgramlogo.png",
-        width: 1200,
-        height: 630,
-        alt: "RoastGram - AI Instagram Roasting",
       },
     ],
-    locale: "en_US",
-    type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "RoastGram - Roast Your Instagram Profile with AI",
+    title: "RoastGram - Roast akun instagram anda dengan AI",
     description:
       "Get your Instagram profile roasted by our AI. Hilarious, spicy, and guaranteed to burn your ego!",
-    images: ["/twitter-image.jpg"],
+    images: ["/images/roastgramlogo.png"],
     creator: "@roastgram",
   },
   robots: {

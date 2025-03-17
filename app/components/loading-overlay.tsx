@@ -18,7 +18,10 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
     >
       {/* Eye Blinking Animation */}
       <div className="relative mb-8">
-        <span className="loader"></span>
+        <div className="eye">
+          <div className="pupil"></div>
+        </div>
+
         <style jsx>{`
           .loader {
             position: relative;
@@ -39,12 +42,6 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
               circle 14px,
               /* Ukuran bola mata putih */ #0d161b 100%,
               transparent 0
-            );
-            mask-image: radial-gradient(circle, white 50%, transparent 51%);
-            -webkit-mask-image: radial-gradient(
-              circle,
-              white 50%,
-              transparent 51%
             );
 
             background-size: 100% 100%; /* Ukuran bola mata putih */
