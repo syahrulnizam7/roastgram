@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,6 +24,42 @@ export const metadata: Metadata = {
     "instagram profile",
     "funny roast",
   ],
+  openGraph: {
+    title: "RoastGram - Roast Your Instagram Profile with AI",
+    description:
+      "Biarkan profil Instagram Anda di-roasting oleh AI kami. Lucu, pedas, dan dijamin membakar ego Anda",
+    url: "https://roastgram.vercel.app",
+    siteName: "RoastGram",
+    images: [
+      {
+        url: "/roastgramlogo.png",
+        width: 1200,
+        height: 630,
+        alt: "RoastGram - AI Instagram Roasting",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "RoastGram - Roast Your Instagram Profile with AI",
+    description:
+      "Get your Instagram profile roasted by our AI. Hilarious, spicy, and guaranteed to burn your ego!",
+    images: ["/twitter-image.jpg"],
+    creator: "@roastgram",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   creator: "Alangkun",
   icons: {
     icon: [{ url: "/favicon.ico" }],
@@ -40,6 +77,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <Analytics />
       </body>
     </html>
   );

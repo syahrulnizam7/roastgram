@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@types/html2canvas": "^0.5.35",
+    "@vercel/analytics": "^1.5.0",
     "apify-client": "^2.12.1",
     "axios": "^1.8.3",
     "framer-motion": "^12.5.0",
