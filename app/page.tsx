@@ -1,103 +1,141 @@
-import Image from "next/image";
+// File: app/page.tsx
+"use client";
+
+import { useState } from "react";
+import { InstagramProfile } from "@/types";
+import { scrapeInstagramProfile, generateRoast } from "@/lib/api";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [username, setUsername] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [roast, setRoast] = useState<string | null>(null);
+  const [profileData, setProfileData] = useState<InstagramProfile | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!username.trim()) {
+      setError("Username tidak boleh kosong!");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      setRoast(null);
+
+      // Scrape profile Instagram
+      const profile = await scrapeInstagramProfile(username);
+      setProfileData(profile);
+
+      // Generate roast
+      const roastText = await generateRoast(username, profile);
+      setRoast(roastText);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Terjadi kesalahan saat memproses permintaan"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <main className="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-800 flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white/10 backdrop-blur-md rounded-xl shadow-xl p-6 text-white">
+        <h1 className="text-3xl font-bold text-center mb-6">
+          Instagram Roaster 🔥
+        </h1>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="flex flex-col space-y-2">
+            <label htmlFor="username" className="text-sm font-medium">
+              Username Instagram
+            </label>
+            <div className="flex">
+              <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
+                @
+              </span>
+              <input
+                type="text"
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="flex-1 min-w-0 block w-full px-3 py-2 rounded-r-md border border-gray-300 bg-gray-50 text-gray-900 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="username"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out disabled:opacity-50"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+            {loading ? "Memproses..." : "Roast! 🔥"}
+          </button>
+        </form>
+
+        {error && (
+          <div className="mt-4 p-3 bg-red-500/30 border border-red-500 rounded-md">
+            <p className="text-sm">{error}</p>
+          </div>
+        )}
+
+        {roast && (
+          <div className="mt-6 p-4 bg-black/30 rounded-md">
+            <h2 className="text-xl font-bold mb-2">Roast untuk @{username}</h2>
+            <p className="text-sm italic">{roast}</p>
+          </div>
+        )}
+
+        {profileData && (
+          <div className="mt-6 p-4 bg-black/30 rounded-md">
+            <h2 className="text-xl font-bold mb-2">Profil yang di-roast:</h2>
+            <div className="flex items-center space-x-3 mb-2">
+              {profileData.profilePicUrl && (
+                // Gunakan img element biasa, bukan Image dari Next.js
+                <img
+                  src={profileData.profilePicUrl}
+                  alt={`${username}'s profile`}
+                  className="w-12 h-12 rounded-full object-cover"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    // Fallback jika gambar gagal dimuat
+                    e.currentTarget.src = "https://via.placeholder.com/48";
+                  }}
+                />
+              )}
+              <div>
+                <p className="font-medium">@{username}</p>
+                {profileData.fullName && (
+                  <p className="text-sm">{profileData.fullName}</p>
+                )}
+              </div>
+            </div>
+            {profileData.biography && (
+              <p className="text-sm mb-2">{profileData.biography}</p>
+            )}
+            <div className="grid grid-cols-3 gap-2 text-center text-xs">
+              <div>
+                <p className="font-bold">{profileData.postsCount}</p>
+                <p>Posts</p>
+              </div>
+              <div>
+                <p className="font-bold">{profileData.followersCount}</p>
+                <p>Followers</p>
+              </div>
+              <div>
+                <p className="font-bold">{profileData.followsCount}</p>
+                <p>Following</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </main>
   );
 }

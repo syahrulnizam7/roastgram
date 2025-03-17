@@ -9,16 +9,21 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "apify-client": "^2.12.1",
+    "axios": "^1.8.3",
+    "framer-motion": "^12.5.0",
+    "lucide-react": "^0.482.0",
+    "next": "15.2.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.2.2"
+    "react-icons": "^5.5.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }
