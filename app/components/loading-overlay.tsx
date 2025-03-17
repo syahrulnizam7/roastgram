@@ -36,7 +36,7 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
             background-color: #fff;
             background-size: 40px 40px;
             background-image: radial-gradient(
-              circle 44px,
+              circle 50px,
               #0d161b 30%,
               transparent 31%
             );
