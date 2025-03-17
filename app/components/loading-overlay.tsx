@@ -27,17 +27,22 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
             display: flex;
             justify-content: space-between;
           }
-          @media (max-width: 768px) {
-            .loader::after,
-            .loader::before {
-              width: 36px; /* Sesuaikan ukuran lingkaran mata di mobile */
-              height: 36px; /* Sesuaikan ukuran lingkaran mata di mobile */
-              background-image: radial-gradient(
-                circle 10px,
-                /* Sesuaikan ukuran bola mata putih di mobile */ #0d161b 100%,
-                transparent 0
-              );
-            }
+          .loader::after,
+          .loader::before {
+            content: "";
+            display: inline-block;
+            width: 48px; /* Ukuran lingkaran mata */
+            height: 48px; /* Ukuran lingkaran mata */
+            background-color: #fff;
+            background-image: radial-gradient(
+              circle 14px,
+              /* Ukuran bola mata putih */ #0d161b 100%,
+              transparent 0
+            );
+            background-repeat: no-repeat;
+            background-position: center; /* Posisi bola mata putih di tengah */
+            border-radius: 50%;
+            animation: eyeMove 10s infinite, blink 10s infinite;
           }
           @keyframes eyeMove {
             0%,
