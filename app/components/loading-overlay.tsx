@@ -59,11 +59,11 @@ export function LoadingOverlay({ stage, darkMode }: LoadingOverlayProps) {
             }
             13%,
             40% {
-              background-position: -15px 0px;
+              background-position: -15px center;
             }
             43%,
             70% {
-              background-position: 15px 0px;
+              background-position: 15px center;
             }
             73%,
             90% {
