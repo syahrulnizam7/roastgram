@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     siteName: "RoastGram",
     images: [
       {
-        url: "/images/roastgramlogo.png",
+        url: "/images/roastgramlogo2.png",
       },
     ],
   },
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     title: "RoastGram - Roast akun instagram anda dengan AI",
     description:
       "Get your Instagram profile roasted by our AI. Hilarious, spicy, and guaranteed to burn your ego!",
-    images: ["/images/roastgramlogo.png"],
+    images: ["/images/roastgramlogo2.png"],
     creator: "@roastgram",
   },
   robots: {
