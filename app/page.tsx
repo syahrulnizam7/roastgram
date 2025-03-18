@@ -141,7 +141,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Tambahkan Footer di sini */}
       <Footer />
     </main>
   );
