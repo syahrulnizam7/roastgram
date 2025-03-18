@@ -54,24 +54,12 @@ export default function Home() {
 
       // Scraping stage
       setStage("scraping");
-
-      // Kirim permintaan ke endpoint /api/roast
-      const roastResponse = await fetch("/api/roast", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username }),
-      });
-
-      if (!roastResponse.ok) {
-        throw new Error("Gagal memproses permintaan");
-      }
-
-      const { profile, roast: roastText } = await roastResponse.json();
-
-      // Set data profil dan roast
+      const profile = await scrapeInstagramProfile(username);
       setProfileData(profile);
+
+      // Roasting stage
+      setStage("roasting");
+      const roastText = await generateRoast(username, profile);
       setRoast(roastText);
 
       // Complete
