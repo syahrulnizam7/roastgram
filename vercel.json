@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "api/**/*.ts": {
-      "maxDuration": 60
-    }
-  }
-}
