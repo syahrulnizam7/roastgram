@@ -19,6 +19,21 @@ export async function POST(request: NextRequest) {
     // Generate roast
     const roastText = await generateRoast(username, profile);
 
+    // Simpan data ke Apify dataset
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
+    const addToDatasetResponse = await fetch(`${baseUrl}/api/addToDataset`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, profile }),
+    });
+
+    if (!addToDatasetResponse.ok) {
+      throw new Error("Gagal menambahkan data ke dataset");
+    }
+
     return NextResponse.json({
       success: true,
       profile,
