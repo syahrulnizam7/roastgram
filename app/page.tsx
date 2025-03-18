@@ -36,7 +36,7 @@ export default function Home() {
 
     try {
       setLoading(true);
-
+      setStage("scraping");
       // Scrape profile
       const scrapeResponse = await fetch("/api/scrape", {
         method: "POST",
@@ -53,6 +53,7 @@ export default function Home() {
       const { profile } = await scrapeResponse.json();
 
       // Generate roast
+      setStage("roasting");
       const roastResponse = await fetch("/api/roast", {
         method: "POST",
         headers: {
