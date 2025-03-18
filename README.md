@@ -39,7 +39,8 @@ Roastgram adalah sebuah aplikasi berbasis web yang dapat memberikan roasting sar
 
 ## 📸 Tangkapan Layar
 
-\_![alt text](screencapture-roastgram-vercel-app-2025-03-18-06_30_47.png)
+\_![screencapture-roastgram-vercel-app-2025-03-18-06_30_47](https://github.com/user-attachments/assets/95f49008-64ea-4b7c-8a0a-b96152113d04)
+
 
 ---
 
