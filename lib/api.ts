@@ -109,6 +109,7 @@ export async function generateRoast(
                   
                     PENTING: Berikan HANYA teks roasting, tanpa kata pengantar atau pembuka apapun seperti "Oke, siap" atau "Berikut roasting untuk". Langsung mulai dengan roastingnya.
                     Gunakan **gaya sarkastik dan menyakitkan** sampai kena mental,
+Gunakan Bahasa Gaul, boleh menggunakan kata kata kasar tapi jangan berlebihan,
                     gunakan kata kata yang bisa dipahami.
                     Boleh menyindir jumlah followers, postingan, bio, gaya foto, atau apapun yang relevan berdasarkan data berikut: ${profileDataString}`,
                 },
