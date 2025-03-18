@@ -37,6 +37,7 @@ export default function Home() {
     try {
       setLoading(true);
       setStage("scraping");
+
       // Scrape profile
       const scrapeResponse = await fetch("/api/scrape", {
         method: "POST",
@@ -47,7 +48,8 @@ export default function Home() {
       });
 
       if (!scrapeResponse.ok) {
-        throw new Error("Gagal mengambil data profil");
+        const errorData = await scrapeResponse.json();
+        throw new Error(errorData.error || "Gagal mengambil data profil");
       }
 
       const { profile } = await scrapeResponse.json();

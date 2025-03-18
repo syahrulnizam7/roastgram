@@ -54,6 +54,19 @@ export async function scrapeInstagramProfile(
         })),
     };
 
+    // Cek apakah semua data bernilai 0 atau null
+    const isProfileEmpty =
+      profile.postsCount === 0 &&
+      profile.followersCount === 0 &&
+      profile.followsCount === 0 &&
+      !profile.fullName &&
+      !profile.biography &&
+      !profile.profilePicUrl;
+
+    if (isProfileEmpty) {
+      throw new Error("Profil tidak ditemukan atau tidak valid");
+    }
+
     return profile;
   } catch (error) {
     console.error("Error scraping Instagram profile:", error);
