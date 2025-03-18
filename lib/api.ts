@@ -1,4 +1,3 @@
-// File: lib/api.ts
 import { ApifyClient } from "apify-client";
 import { InstagramProfile } from "@/types";
 
