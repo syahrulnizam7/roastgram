@@ -27,7 +27,6 @@ Roastgram adalah sebuah aplikasi berbasis web yang dapat memberikan roasting sar
 
 ### **Backend**
 
-- Next.js API Routes
 - AI Gemini
 - Apify
 
