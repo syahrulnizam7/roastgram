@@ -34,44 +34,45 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!username.trim()) {
-      setError("Username tidak boleh kosong!");
-      return;
-    }
-
     try {
       setLoading(true);
-      setError(null);
-      setRoast(null);
-      setShowResults(false);
 
-      // Flame animation
-      flameControls.start({
-        scale: [1, 1.5, 1],
-        rotate: [0, 15, -15, 0],
-        transition: { duration: 0.5 },
+      // Scrape profile
+      const scrapeResponse = await fetch("/api/scrape", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username }),
       });
 
-      // Scraping stage
-      setStage("scraping");
-      const profile = await scrapeInstagramProfile(username);
+      if (!scrapeResponse.ok) {
+        throw new Error("Gagal mengambil data profil");
+      }
+
+      const { profile } = await scrapeResponse.json();
+
+      // Generate roast
+      const roastResponse = await fetch("/api/roast", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, profile }),
+      });
+
+      if (!roastResponse.ok) {
+        throw new Error("Gagal membuat roast");
+      }
+
+      const { roast: roastText } = await roastResponse.json();
+
+      // Set hasil
       setProfileData(profile);
-
-      // Roasting stage
-      setStage("roasting");
-      const roastText = await generateRoast(username, profile);
       setRoast(roastText);
-
-      // Complete
-      setStage("complete");
       setShowResults(true);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Terjadi kesalahan saat memproses permintaan"
-      );
-      setStage("idle");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Terjadi kesalahan");
     } finally {
       setLoading(false);
     }

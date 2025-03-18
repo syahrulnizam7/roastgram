@@ -1,39 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
-import { scrapeInstagramProfile, generateRoast } from "@/lib/api";
+import { NextResponse } from "next/server";
+import { generateRoast } from "@/lib/api";
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
+  const { username, profile } = await request.json();
+
   try {
-    const body = await request.json();
-    const { username } = body;
-
-    if (!username) {
-      return NextResponse.json(
-        { error: "Username tidak boleh kosong" },
-        { status: 400 }
-      );
-    }
-
-    // Scrape profile Instagram
-    const profile = await scrapeInstagramProfile(username);
-
     // Generate roast
     const roastText = await generateRoast(username, profile);
-
-    return NextResponse.json({
-      success: true,
-      profile,
-      roast: roastText,
-    });
+    return NextResponse.json({ success: true, roast: roastText });
   } catch (error) {
-    console.error("Error in roast API:", error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Terjadi kesalahan saat memproses permintaan",
-      },
-      { status: 500 }
-    );
+    console.error("Error generating roast:", error);
+    return NextResponse.json({ error: "Gagal membuat roast" }, { status: 500 });
   }
 }
