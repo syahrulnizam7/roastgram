@@ -10,7 +10,7 @@ export async function POST(request: Request) {
 
     // Simpan data ke Apify dataset
     const addToDatasetResponse = await fetch(
-      "http://localhost:3000/api/addToDataset",
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/addToDataset`,
       {
         method: "POST",
         headers: {
