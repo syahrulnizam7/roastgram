@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FaGithub, FaInstagram } from "react-icons/fa"; // Import ikon GitHub dan Instagram dari react-icons
+import { FaGithub, FaInstagram } from "react-icons/fa";
 
 export default function Footer() {
   const [darkMode, setDarkMode] = useState(false);
