@@ -2,11 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { FaGithub } from "react-icons/fa"; // Import ikon GitHub dari react-icons
-import { motion, AnimatePresence } from "framer-motion";
 
 export default function Footer() {
   const [darkMode, setDarkMode] = useState(false);
-  const [showNotification, setShowNotification] = useState(false);
 
   // Initialize dark mode based on user preference
   useEffect(() => {
@@ -26,26 +24,6 @@ export default function Footer() {
       document.documentElement.classList.remove("dark");
     }
   }, [darkMode]);
-
-  // Show notification after a delay
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowNotification(true);
-    }, 3000); // Show after 3 seconds
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Hide notification after it's been shown for a while
-  useEffect(() => {
-    if (showNotification) {
-      const hideTimer = setTimeout(() => {
-        setShowNotification(false);
-      }, 8000); // Hide after 8 seconds of being shown
-
-      return () => clearTimeout(hideTimer);
-    }
-  }, [showNotification]);
 
   return (
     <footer className={`w-full py-6 px-4  flex items-center justify-between`}>
