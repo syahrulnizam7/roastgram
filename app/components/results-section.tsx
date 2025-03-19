@@ -85,7 +85,7 @@ export function ResultsSection({
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3, type: "spring" }}
         >
-          Roast Results
+          Hasil Roast
         </motion.h2>
         <motion.div
           className="h-1.5 md:h-2 w-32 md:w-40 mx-auto bg-black rounded-full overflow-hidden"
@@ -504,7 +504,7 @@ function RoastCard({
               darkMode ? "text-yellow-300" : "text-red-600"
             }`}
           />
-          Roast Result
+          Hasil Roast
         </h2>
 
         <motion.div

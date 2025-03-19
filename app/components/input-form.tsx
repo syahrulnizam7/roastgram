@@ -5,7 +5,7 @@ import type React from "react";
 import { motion, AnimatePresence, type AnimationControls } from "framer-motion";
 import {
   Instagram,
-  Search,
+  AtSign,
   Flame,
   ArrowRight,
   Zap,
@@ -94,7 +94,7 @@ export function InputForm({
                     repeat: Number.POSITIVE_INFINITY,
                   }}
                 >
-                  <Search
+                  <AtSign
                     className={`w-5 h-5 md:w-6 md:h-6 ${
                       darkMode ? "text-gray-300" : "text-black"
                     }`}
