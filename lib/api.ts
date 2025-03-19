@@ -120,6 +120,7 @@ export async function generateRoast(
                     text: `Berikan roasting sarkastik, kejam, dan menyindir secara lucu (tapi tidak terlalu kasar) untuk profil Instagram "${username}" ini. 
                     
                     PENTING: Berikan HANYA teks roasting, tanpa kata pengantar atau pembuka apapun seperti "Oke, siap" atau "Berikut roasting untuk". Langsung mulai dengan roastingnya.
+                    sesekali gunakan emoticon.
                     Gunakan **gaya sarkastik dan menyakitkan** sampai kena mental,
                     Gunakan Bahasa Gaul, boleh menggunakan kata kata kasar tapi jangan berlebihan,
                     gunakan kata kata yang bisa dipahami.
