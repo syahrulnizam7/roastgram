@@ -123,6 +123,7 @@ export default function Home() {
 
     try {
       setLoading(true);
+      setStage("scraping");
 
       // Cek apakah hasil roasting sudah ada di localStorage
       const existingRoast = getRoastFromLocalStorage(username);
@@ -158,6 +159,7 @@ export default function Home() {
       const { profile } = await scrapeResponse.json();
 
       // Generate roast
+      setStage("roasting");
       const roastResponse = await fetch("/api/roast", {
         method: "POST",
         headers: {
