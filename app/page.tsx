@@ -31,6 +31,14 @@ export default function Home() {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const flameControls = useAnimationControls();
 
+  // useEffect(() => {
+  //   if (process.env.NODE_ENV === "development") {
+  //     localStorage.removeItem("scrapeCount");
+  //     localStorage.removeItem(`roast_${username}`);
+  //     console.log("Limit reset (Development Mode)");
+  //   }
+  // }, [username]); // Akan berjalan setiap username berubah
+
   useEffect(() => {
     if (typeof window !== "undefined" && username) {
       const existingRoast = getRoastFromLocalStorage(username);
@@ -116,7 +124,7 @@ export default function Home() {
       Date.now() - scrapeCountData.timestamp < 600000
     ) {
       setError(
-        "Limit roasting tercapai (2x/10 menit). Coba lagi nanti!(  •̀⤙•́  )"
+        "Limit roasting anda tercapai (2x/10 menit). Coba lagi nanti!(  •̀⤙•́  )"
       );
       return;
     }
