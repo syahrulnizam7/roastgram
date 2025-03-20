@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { InstagramProfile } from "@/types";
 import { scrapeInstagramProfile, generateRoast } from "@/lib/api";
 import { useAnimationControls } from "framer-motion";
@@ -31,12 +31,72 @@ export default function Home() {
 
   const flameControls = useAnimationControls();
 
+  // Fungsi untuk menyimpan hasil roasting ke localStorage
+  const saveRoastToLocalStorage = (username: string, roast: string) => {
+    const roastData = {
+      roast,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem(`roast_${username}`, JSON.stringify(roastData));
+  };
+
+  // Fungsi untuk mengambil hasil roasting dari localStorage
+  const getRoastFromLocalStorage = (username: string) => {
+    const roastData = localStorage.getItem(`roast_${username}`);
+    if (roastData) {
+      return JSON.parse(roastData);
+    }
+    return null;
+  };
+
+  // Fungsi untuk menyimpan jumlah scraping ke localStorage
+  const saveScrapeCountToLocalStorage = () => {
+    const scrapeCountData = {
+      count: 1,
+      timestamp: Date.now(),
+    };
+    const existingData = localStorage.getItem("scrapeCount");
+    if (existingData) {
+      const parsedData = JSON.parse(existingData);
+      scrapeCountData.count = parsedData.count + 1;
+    }
+    localStorage.setItem("scrapeCount", JSON.stringify(scrapeCountData));
+  };
+
+  // Fungsi untuk mengambil jumlah scraping dari localStorage
+  const getScrapeCountFromLocalStorage = () => {
+    const scrapeCountData = localStorage.getItem("scrapeCount");
+    if (scrapeCountData) {
+      return JSON.parse(scrapeCountData);
+    }
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const scrapeCountData = getScrapeCountFromLocalStorage();
+    if (
+      scrapeCountData &&
+      scrapeCountData.count >= 2 &&
+      Date.now() - scrapeCountData.timestamp < 600000
+    ) {
+      setError(
+        "Limit roasting anda tercapai (2x/10 menit). Coba lagi nanti!(  •̀⤙•́  )."
+      );
+      return;
+    }
+
     try {
       setLoading(true);
-      setStage("scraping");
+
+      // Cek apakah hasil roasting sudah ada di localStorage
+      const existingRoast = getRoastFromLocalStorage(username);
+      if (existingRoast && Date.now() - existingRoast.timestamp < 600000) {
+        setRoast(existingRoast.roast);
+        setShowResults(true);
+        return;
+      }
 
       // Scrape profile
       const scrapeResponse = await fetch("/api/scrape", {
@@ -55,7 +115,6 @@ export default function Home() {
       const { profile } = await scrapeResponse.json();
 
       // Generate roast
-      setStage("roasting");
       const roastResponse = await fetch("/api/roast", {
         method: "POST",
         headers: {
@@ -74,6 +133,20 @@ export default function Home() {
       setProfileData(profile);
       setRoast(roastText);
       setShowResults(true);
+
+      // Simpan hasil roasting ke localStorage
+      saveRoastToLocalStorage(username, roastText);
+      saveScrapeCountToLocalStorage();
+
+      // Beritahu pengguna bahwa hasil roasting akan direset setelah 10 menit
+      setTimeout(() => {
+        localStorage.removeItem(`roast_${username}`);
+        setRoast(null);
+        setProfileData(null);
+        setUsername("");
+        setShowResults(false);
+        setError("Hasil roasting telah direset. Silakan coba lagi.");
+      }, 600000); // 10 menit dalam milidetik
     } catch (error) {
       setError(error instanceof Error ? error.message : "Terjadi kesalahan");
     } finally {
