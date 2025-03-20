@@ -10,6 +10,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, roast: roastText });
   } catch (error) {
     console.error("Error generating roast:", error);
-    return NextResponse.json({ error: "Gagal membuat roast" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Gagal membuat roast / limit token, coba lagi nanti" },
+      { status: 500 }
+    );
   }
 }
