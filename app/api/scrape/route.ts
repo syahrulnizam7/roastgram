@@ -28,8 +28,11 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Error scraping profile:", error);
     return NextResponse.json(
-      { error: "Profil tidak ditemukan atau tidak valid" },
-      { status: 404 } // Gunakan status 404 untuk "Not Found"
+      {
+        error:
+          "Profil tidak ditemukan atau tidak valid/Limit token saya abis T_T",
+      },
+      { status: 404 }
     );
   }
 }

@@ -5,7 +5,6 @@ export async function POST(request: Request) {
   const { username, profile } = await request.json();
 
   try {
-    // Generate roast
     const roastText = await generateRoast(username, profile);
     return NextResponse.json({ success: true, roast: roastText });
   } catch (error) {
