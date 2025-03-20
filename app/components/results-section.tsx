@@ -24,6 +24,7 @@ interface ResultsSectionProps {
   darkMode: boolean;
   copied: boolean;
   copyToClipboard: () => void;
+  timeLeft: number | null;
 }
 
 export function ResultsSection({
@@ -33,6 +34,7 @@ export function ResultsSection({
   darkMode,
   copied,
   copyToClipboard,
+  timeLeft,
 }: ResultsSectionProps) {
   const resultsRef = useRef(null);
   const isInView = useInView(resultsRef, { once: true });
@@ -97,6 +99,27 @@ export function ResultsSection({
           transition={{ delay: 0.4, duration: 0.8 }}
         />
       </motion.div>
+
+      {/* Notifikasi "Hasil roasting akan direset setelah 10 menit" */}
+      {timeLeft !== null && (
+        <motion.div
+          className={`mb-4 p-3 ${
+            darkMode ? "bg-blue-600" : "bg-blue-400"
+          } border-3 border-black rounded-md shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]`}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <p
+            className={`text-sm font-bold ${
+              darkMode ? "text-white" : "text-black"
+            }`}
+          >
+            Hasil roasting akan direset dalam {Math.floor(timeLeft / 60)} menit{" "}
+            {timeLeft % 60} detik.
+          </p>
+        </motion.div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-8">
         <ProfileCard

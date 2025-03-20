@@ -28,46 +28,79 @@ export default function Home() {
   const [showResults, setShowResults] = useState(false);
   const [copied, setCopied] = useState(false);
   const { darkMode, setDarkMode } = useTheme();
-
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const flameControls = useAnimationControls();
 
+  useEffect(() => {
+    if (typeof window !== "undefined" && username) {
+      const existingRoast = getRoastFromLocalStorage(username);
+      if (existingRoast && Date.now() - existingRoast.timestamp < 600000) {
+        setRoast(existingRoast.roast);
+        setProfileData(existingRoast.profile);
+        setShowResults(true);
+
+        // Hitung waktu tersisa sebelum reset
+        setTimeLeft(
+          Math.ceil((600000 - (Date.now() - existingRoast.timestamp)) / 1000)
+        );
+      }
+    }
+  }, [username]); // Hanya dijalankan saat username berubah
+
   // Fungsi untuk menyimpan hasil roasting ke localStorage
-  const saveRoastToLocalStorage = (username: string, roast: string) => {
-    const roastData = {
-      roast,
-      timestamp: Date.now(),
-    };
-    localStorage.setItem(`roast_${username}`, JSON.stringify(roastData));
+  const saveRoastToLocalStorage = (
+    username: string,
+    roast: string,
+    profile: InstagramProfile
+  ) => {
+    // Pastikan kode ini hanya dijalankan di browser
+    if (typeof window !== "undefined") {
+      const roastData = {
+        roast,
+        profile,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem(`roast_${username}`, JSON.stringify(roastData));
+    }
   };
 
   // Fungsi untuk mengambil hasil roasting dari localStorage
   const getRoastFromLocalStorage = (username: string) => {
-    const roastData = localStorage.getItem(`roast_${username}`);
-    if (roastData) {
-      return JSON.parse(roastData);
+    // Pastikan kode ini hanya dijalankan di browser
+    if (typeof window !== "undefined") {
+      const roastData = localStorage.getItem(`roast_${username}`);
+      if (roastData) {
+        return JSON.parse(roastData);
+      }
     }
     return null;
   };
 
   // Fungsi untuk menyimpan jumlah scraping ke localStorage
   const saveScrapeCountToLocalStorage = () => {
-    const scrapeCountData = {
-      count: 1,
-      timestamp: Date.now(),
-    };
-    const existingData = localStorage.getItem("scrapeCount");
-    if (existingData) {
-      const parsedData = JSON.parse(existingData);
-      scrapeCountData.count = parsedData.count + 1;
+    // Pastikan kode ini hanya dijalankan di browser
+    if (typeof window !== "undefined") {
+      const scrapeCountData = {
+        count: 1,
+        timestamp: Date.now(),
+      };
+      const existingData = localStorage.getItem("scrapeCount");
+      if (existingData) {
+        const parsedData = JSON.parse(existingData);
+        scrapeCountData.count = parsedData.count + 1;
+      }
+      localStorage.setItem("scrapeCount", JSON.stringify(scrapeCountData));
     }
-    localStorage.setItem("scrapeCount", JSON.stringify(scrapeCountData));
   };
 
   // Fungsi untuk mengambil jumlah scraping dari localStorage
   const getScrapeCountFromLocalStorage = () => {
-    const scrapeCountData = localStorage.getItem("scrapeCount");
-    if (scrapeCountData) {
-      return JSON.parse(scrapeCountData);
+    // Pastikan kode ini hanya dijalankan di browser
+    if (typeof window !== "undefined") {
+      const scrapeCountData = localStorage.getItem("scrapeCount");
+      if (scrapeCountData) {
+        return JSON.parse(scrapeCountData);
+      }
     }
     return null;
   };
@@ -75,6 +108,7 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Cek apakah pengguna sudah mencapai limit scraping (2x/10 menit)
     const scrapeCountData = getScrapeCountFromLocalStorage();
     if (
       scrapeCountData &&
@@ -82,7 +116,7 @@ export default function Home() {
       Date.now() - scrapeCountData.timestamp < 600000
     ) {
       setError(
-        "Limit roasting anda tercapai (2x/10 menit). Coba lagi nanti!(  •̀⤙•́  )."
+        "Limit roasting tercapai (2x/10 menit). Coba lagi nanti!(  •̀⤙•́  )"
       );
       return;
     }
@@ -93,11 +127,20 @@ export default function Home() {
       // Cek apakah hasil roasting sudah ada di localStorage
       const existingRoast = getRoastFromLocalStorage(username);
       if (existingRoast && Date.now() - existingRoast.timestamp < 600000) {
+        // Jika hasil roasting masih valid (kurang dari 10 menit), gunakan data yang ada
         setRoast(existingRoast.roast);
+        setProfileData(existingRoast.profile);
         setShowResults(true);
+
+        // Hitung waktu tersisa sebelum reset
+        const timeLeft = Math.ceil(
+          (600000 - (Date.now() - existingRoast.timestamp)) / 1000
+        );
+        setTimeLeft(timeLeft);
         return;
       }
 
+      // Jika hasil roasting tidak ada atau sudah kadaluarsa, lakukan scraping baru
       // Scrape profile
       const scrapeResponse = await fetch("/api/scrape", {
         method: "POST",
@@ -134,9 +177,13 @@ export default function Home() {
       setRoast(roastText);
       setShowResults(true);
 
-      // Simpan hasil roasting ke localStorage
-      saveRoastToLocalStorage(username, roastText);
+      // Simpan hasil roasting dan data profil ke localStorage
+      saveRoastToLocalStorage(username, roastText, profile);
       saveScrapeCountToLocalStorage();
+
+      // Hitung waktu tersisa sebelum reset
+      const timeLeft = 600; // 10 menit dalam detik
+      setTimeLeft(timeLeft);
 
       // Beritahu pengguna bahwa hasil roasting akan direset setelah 10 menit
       setTimeout(() => {
@@ -146,6 +193,7 @@ export default function Home() {
         setUsername("");
         setShowResults(false);
         setError("Hasil roasting telah direset. Silakan coba lagi.");
+        setTimeLeft(null); // Reset waktu tersisa
       }, 600000); // 10 menit dalam milidetik
     } catch (error) {
       setError(error instanceof Error ? error.message : "Terjadi kesalahan");
@@ -210,6 +258,7 @@ export default function Home() {
               darkMode={darkMode}
               copied={copied}
               copyToClipboard={copyToClipboard}
+              timeLeft={timeLeft}
             />
           )}
 
