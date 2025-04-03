@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence, type AnimationControls } from "framer-motion";
 import {
   Instagram,
@@ -31,6 +31,33 @@ export function InputForm({
   darkMode,
   flameControls,
 }: InputFormProps) {
+  const [totalRoasted, setTotalRoasted] = useState<number | null>(null);
+  const [totalRoastedError, setTotalRoastedError] = useState<string | null>(
+    null
+  );
+  // Fungsi untuk mengambil total roasted dari API
+  useEffect(() => {
+    const fetchTotalRoasted = async () => {
+      try {
+        const response = await fetch("/api/total-roasted");
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Gagal mengambil data");
+        }
+
+        setTotalRoasted(data.total);
+        setTotalRoastedError(null);
+      } catch (error) {
+        console.error("Error fetching total roasted:", error);
+        setTotalRoastedError("Gagal memuat statistik total roasted");
+        setTotalRoasted(null);
+      }
+    };
+
+    fetchTotalRoasted();
+  }, []);
+
   return (
     <motion.div
       key="input-form"
@@ -52,6 +79,21 @@ export function InputForm({
           className="h-20 md:h-28 w-auto mx-auto mb-5 md:mb-8"
         />
 
+        {/* Tambahkan tampilan total roasted di sini */}
+        {totalRoastedError && (
+          <motion.div
+            className={`mt-2 p-2 ${
+              darkMode ? "bg-red-800" : "bg-red-400"
+            } rounded-md`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <p className={`text-sm ${darkMode ? "text-white" : "text-black"}`}>
+              {totalRoastedError}
+            </p>
+          </motion.div>
+        )}
+
         <p
           className={`${
             darkMode ? "text-gray-300" : "text-black"
@@ -60,6 +102,49 @@ export function InputForm({
           Roasting akun instagram-mu, siap kena mental? 💀
         </p>
       </motion.div>
+
+      {totalRoasted !== null && (
+        <motion.div
+          className={`mb-4 ${
+            darkMode ? "bg-yellow-500" : "bg-yellow-400"
+          } border-3 border-black rounded-none shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] px-3 py-2 w-full text-center`}
+          initial={{ y: 10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          whileHover={{
+            y: -3,
+            x: -3,
+            boxShadow: "6px 6px 0px 0px rgba(0,0,0,1)",
+            transition: { duration: 0.2 },
+          }}
+        >
+          <div className="flex items-center justify-center gap-2">
+            <div className="bg-black p-1 border-2 border-black">
+              <svg
+                className="w-4 h-4 text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                  clipRule="evenodd"
+                ></path>
+              </svg>
+            </div>
+
+            <div className="font-mono">
+              <span className="text-lg font-black text-black">
+                {totalRoasted.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+              </span>
+              <span className="text-sm font-bold text-black ml-1">
+                akun telah di roasting
+              </span>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       <motion.div
         className={`${

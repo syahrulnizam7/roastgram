@@ -210,6 +210,17 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
+
+    // Setelah mendapatkan roastText:
+    const updateResponse = await fetch("/api/update-roast-count", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username }),
+    });
+
+    if (!updateResponse.ok) {
+      console.error("Gagal update total roasted");
+    }
   };
 
   const resetForm = () => {
