@@ -7,14 +7,10 @@
     }
   ],
   "functions": {
-    "app/api/**/*.ts": {
+    "app/api/**": {
+      "memory": 1024,
       "maxDuration": 60,
       "includeFiles": ["ca.pem"]
-    }
-  },
-  "build": {
-    "env": {
-      "NODE_ENV": "production"
     }
   }
 }
