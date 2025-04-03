@@ -16,6 +16,7 @@
     "framer-motion": "^12.5.0",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.482.0",
+    "mysql2": "^3.6.5",
     "next": "15.2.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
