@@ -6,11 +6,13 @@
       "use": "@vercel/next"
     }
   ],
-  "functions": {
-    "app/api/**": {
-      "memory": 1024,
-      "maxDuration": 60,
-      "includeFiles": ["ca.pem"]
+  "routes": [
+    {
+      "src": "/api/.*",
+      "dest": "/api",
+      "headers": {
+        "Content-Type": "application/json"
+      }
     }
-  }
+  ]
 }
