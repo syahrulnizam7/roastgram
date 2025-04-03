@@ -7,7 +7,7 @@
     }
   ],
   "functions": {
-    "app/api/**": {
+    "app/api/**/*.ts": {
       "memory": 1024,
       "maxDuration": 60,
       "includeFiles": "ca.pem"
