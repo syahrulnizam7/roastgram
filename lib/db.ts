@@ -2,17 +2,10 @@ import mysql from "mysql2/promise";
 import fs from "fs";
 import path from "path";
 
-const getCertPath = () => {
-  // Untuk development/local
-  if (process.env.NODE_ENV !== "production") {
-    return path.join(process.cwd(), "public", "ca.pem");
-  }
+// Download CA cert dari Aiven Console dan simpan di root project sebagai 'ca.pem'
+const caCert = fs.readFileSync(path.join(process.cwd(), "ca.pem"));
 
-  // Untuk production di Vercel
-  return path.join("/var/task/public", "ca.pem");
-};
-
-const poolConfig = {
+const pool = mysql.createPool({
   host: process.env.AIVEN_MYSQL_HOST,
   port: Number(process.env.AIVEN_MYSQL_PORT),
   user: process.env.AIVEN_MYSQL_USER,
@@ -20,12 +13,12 @@ const poolConfig = {
   database: process.env.AIVEN_MYSQL_DB_NAME,
   ssl: {
     rejectUnauthorized: true,
-    ca: fs.readFileSync(getCertPath()),
+    ca: caCert,
+    // Tambahkan opsi berikut untuk development
+    minVersion: "TLSv1.2",
   },
   waitForConnections: true,
   connectionLimit: 10,
-};
-
-const pool = mysql.createPool(poolConfig);
+});
 
 export default pool;

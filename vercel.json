@@ -9,8 +9,16 @@
   "functions": {
     "app/api/**": {
       "memory": 1024,
-      "maxDuration": 60,
-      "includeFiles": ["public/ca.pem"]
+      "maxDuration": 60
     }
-  }
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1",
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    }
+  ]
 }
