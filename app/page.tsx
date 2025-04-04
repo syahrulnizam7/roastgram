@@ -171,8 +171,6 @@ export default function Home() {
         return;
       }
 
-      // Jika hasil roasting tidak ada atau sudah kadaluarsa, lakukan scraping baru
-      // Scrape profile
       const scrapeResponse = await fetch("/api/scrape", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

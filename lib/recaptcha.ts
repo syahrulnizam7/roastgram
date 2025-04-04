@@ -1,63 +1,40 @@
-export async function verifyCaptcha(token: string): Promise<{
-  success: boolean;
-  message?: string;
-  score?: number;
-}> {
-  // Skip verification in development
-  if (process.env.NODE_ENV !== "production") {
-    console.log("Non-production mode - skipping captcha verification");
-    return { success: true, score: 0.9 };
-  }
-
-  if (!token) {
-    return { success: false, message: "Missing captcha token" };
-  }
-
+// In your lib/recaptcha.ts file
+export async function verifyCaptcha(token: string, scoreThreshold = 0.5) {
   try {
-    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
-    if (!secretKey) {
-      throw new Error("RECAPTCHA_SECRET_KEY is not configured");
-    }
+    const recaptchaResponse = await fetch(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`,
+      {
+        method: "POST",
+      }
+    );
 
-    const verificationUrl = "https://www.google.com/recaptcha/api/siteverify";
+    const data = await recaptchaResponse.json();
 
-    const response = await fetch(verificationUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        secret: secretKey,
-        response: token,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    console.log("reCAPTCHA verification response:", data);
-
-    if (!data.success) {
+    // Check both success and score threshold
+    if (data.success && data.score >= scoreThreshold) {
       return {
-        success: false,
-        message: data["error-codes"]?.join(", ") || "Verification failed",
+        success: true,
+        message: "Verification successful",
         score: data.score,
       };
+    } else {
+      return {
+        success: false,
+        message: data.success
+          ? `Score too low: ${data.score}`
+          : data["error-codes"]?.join(", ") || "Unknown error",
+        score: data.score || 0,
+      };
     }
-
-    return {
-      success: true,
-      score: data.score,
-      message: "Verification successful",
-    };
   } catch (error) {
-    console.error("Error verifying captcha:", error);
+    console.error("reCAPTCHA verification error:", error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Verification error",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Unknown error during verification",
+      score: 0,
     };
   }
 }
