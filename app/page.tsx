@@ -217,20 +217,19 @@ export default function Home() {
 
       // Update roast count with error handling
       try {
-        // Dapatkan token captcha baru khusus untuk update-roast-count
-        let newCaptchaToken = "";
-        try {
-          newCaptchaToken = await window.grecaptcha.execute(
-            process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!,
-            { action: "update_roast" } // Gunakan action berbeda
-          );
-        } catch (captchaError) {
-          console.error(
-            "Failed to execute reCAPTCHA for update:",
-            captchaError
-          );
+        // Reset reCAPTCHA before each request
+        window.grecaptcha.reset();
+
+        // Get a fresh token for the update-roast-count request
+        const updateCaptchaToken = await window.grecaptcha.execute(
+          process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!,
+          { action: "update_roast" }
+        );
+
+        if (!updateCaptchaToken) {
+          console.error("Failed to get CAPTCHA token");
           throw new Error(
-            "Gagal memverifikasi keamanan untuk update. Silakan coba lagi."
+            "Gagal memverifikasi keamanan. Silakan refresh halaman dan coba lagi."
           );
         }
 
@@ -239,7 +238,7 @@ export default function Home() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             username,
-            captchaToken: newCaptchaToken, // Gunakan token baru
+            captchaToken: updateCaptchaToken, // Use the new token
             clientInfo: {
               userAgent: navigator.userAgent,
               screenResolution: `${window.screen.width}x${window.screen.height}`,
@@ -250,11 +249,12 @@ export default function Home() {
         if (!updateResponse.ok) {
           const errorData = await updateResponse.json();
           console.error("Failed to update roast count:", errorData);
-          throw new Error(errorData.error || "Gagal memperbarui jumlah roast");
+          // Don't throw an error that would interrupt the user flow
+          // Just log it since this is a non-critical operation
+        } else {
+          const result = await updateResponse.json();
+          console.log("Update roast count success:", result);
         }
-
-        const result = await updateResponse.json();
-        console.log("Update roast count success:", result);
       } catch (updateError) {
         console.error("Error updating roast count:", updateError);
       }

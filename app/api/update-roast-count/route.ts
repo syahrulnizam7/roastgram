@@ -9,14 +9,15 @@ export async function POST(request: Request) {
   const userAgent = request.headers.get("user-agent") || "unknown";
 
   try {
-    // Validasi awal request
+    // Ensure content type is correct
     if (request.headers.get("content-type") !== "application/json") {
       return NextResponse.json(
         { error: "Invalid content type" },
         { status: 400 }
       );
     }
-    // Parse request body
+
+    // Parse request body with error handling
     const body = await request.json().catch(() => null);
     if (!body) {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
 
     const { username, captchaToken } = body;
 
-    // Log lebih informatif
+    // Log request details
     console.log("Request Details:", {
       ip,
       userAgent,
@@ -33,6 +34,7 @@ export async function POST(request: Request) {
       timestamp: new Date().toISOString(),
     });
 
+    // Validate username
     if (!username || typeof username !== "string") {
       return NextResponse.json(
         { error: "Username harus berupa string" },
@@ -40,56 +42,42 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate username pattern
-    if (/loop\d+/i.test(username) || username.length > 30) {
+    // Always require CAPTCHA token, even in development
+    if (!captchaToken) {
+      console.warn("Missing CAPTCHA Token - Possible Bot Attack", {
+        ip,
+        userAgent,
+        username,
+      });
       return NextResponse.json(
-        { error: "Format username tidak diizinkan" },
+        {
+          error: "Security verification required",
+          details: "CAPTCHA token is missing",
+        },
         { status: 403 }
       );
     }
 
-    // Verify CAPTCHA (skip in non-production)
-    let captchaValid = process.env.NODE_ENV !== "production";
-    let captchaMessage = "Non-production mode - skipping captcha";
-
-    // Validasi CAPTCHA lebih ketat
-    if (process.env.NODE_ENV === "production") {
-      if (!captchaToken) {
-        console.warn("Missing CAPTCHA Token - Possible Bot Attack", {
-          ip,
-          userAgent,
-          username,
-        });
-        return NextResponse.json(
-          {
-            error: "Security verification required",
-            details: "CAPTCHA token is missing",
-          },
-          { status: 403 }
-        );
-      }
-
-      const captchaResult = await verifyCaptcha(captchaToken);
-      if (!captchaResult.success) {
-        console.error("CAPTCHA Verification Failed", {
-          ip,
-          userAgent,
-          username,
-          reason: captchaResult.message,
-          // errorCodes: captchaResult.errorCodes, // Removed as it does not exist on the type
-        });
-        return NextResponse.json(
-          {
-            error: "Security verification failed",
-            details: captchaResult.message,
-          },
-          { status: 403 }
-        );
-      }
+    // Always verify CAPTCHA
+    const captchaResult = await verifyCaptcha(captchaToken);
+    if (!captchaResult.success) {
+      console.error("CAPTCHA Verification Failed", {
+        ip,
+        userAgent,
+        username,
+        reason: captchaResult.message,
+      });
+      return NextResponse.json(
+        {
+          error: "Security verification failed",
+          details: captchaResult.message,
+        },
+        { status: 403 }
+      );
     }
 
-    // Check rate limit
-    const isAllowed = await rateLimiter(ip, captchaValid);
+    // Check rate limit only after CAPTCHA passes
+    const isAllowed = await rateLimiter(ip, true);
     if (!isAllowed) {
       return NextResponse.json(
         { error: "Terlalu banyak request. Coba lagi nanti." },
@@ -111,10 +99,6 @@ export async function POST(request: Request) {
       {
         success: true,
         totalRoasts: rows.affectedRows,
-        captcha: {
-          verified: captchaValid,
-          message: captchaMessage,
-        },
       },
       {
         headers: {
