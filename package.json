@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tailwindcss/forms": "^0.5.10",
+    "@tailwindcss/typography": "^0.5.16",
     "@types/html2canvas": "^0.5.35",
     "@vercel/analytics": "^1.5.0",
     "apify-client": "^2.12.1",
@@ -27,7 +29,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4.1.2",
     "typescript": "^5"
   }
 }
