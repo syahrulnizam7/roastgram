@@ -6,16 +6,31 @@ import { verifyCaptcha } from "@/lib/recaptcha";
 export async function POST(request: Request) {
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const userAgent = request.headers.get("user-agent") || "unknown";
 
   try {
+    // Validasi awal request
+    if (request.headers.get("content-type") !== "application/json") {
+      return NextResponse.json(
+        { error: "Invalid content type" },
+        { status: 400 }
+      );
+    }
     // Parse request body
-    const body = await request.json();
+    const body = await request.json().catch(() => null);
+    if (!body) {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+
     const { username, captchaToken } = body;
 
-    console.log("Incoming request from IP:", ip);
-    console.log("Request body:", {
-      username,
-      captchaToken: captchaToken ? "exists" : "missing",
+    // Log lebih informatif
+    console.log("Request Details:", {
+      ip,
+      userAgent,
+      username: username ? `${username.substring(0, 3)}...` : "missing",
+      hasToken: !!captchaToken,
+      timestamp: new Date().toISOString(),
     });
 
     if (!username || typeof username !== "string") {
@@ -37,21 +52,36 @@ export async function POST(request: Request) {
     let captchaValid = process.env.NODE_ENV !== "production";
     let captchaMessage = "Non-production mode - skipping captcha";
 
+    // Validasi CAPTCHA lebih ketat
     if (process.env.NODE_ENV === "production") {
-      const captchaResult = await verifyCaptcha(captchaToken);
-      captchaValid = captchaResult.success;
-      captchaMessage = captchaResult.message || "Captcha verification";
-
-      console.log("Captcha verification result:", {
-        captchaValid,
-        captchaMessage,
-      });
-
-      if (!captchaValid) {
+      if (!captchaToken) {
+        console.warn("Missing CAPTCHA Token - Possible Bot Attack", {
+          ip,
+          userAgent,
+          username,
+        });
         return NextResponse.json(
           {
-            error: "Verifikasi keamanan gagal. Silakan coba lagi.",
-            details: captchaMessage,
+            error: "Security verification required",
+            details: "CAPTCHA token is missing",
+          },
+          { status: 403 }
+        );
+      }
+
+      const captchaResult = await verifyCaptcha(captchaToken);
+      if (!captchaResult.success) {
+        console.error("CAPTCHA Verification Failed", {
+          ip,
+          userAgent,
+          username,
+          reason: captchaResult.message,
+          // errorCodes: captchaResult.errorCodes, // Removed as it does not exist on the type
+        });
+        return NextResponse.json(
+          {
+            error: "Security verification failed",
+            details: captchaResult.message,
           },
           { status: 403 }
         );
@@ -95,9 +125,14 @@ export async function POST(request: Request) {
       }
     );
   } catch (error) {
-    console.error("Database error:", error);
+    console.error("API Error:", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      stack: error instanceof Error ? error.stack : undefined,
+      ip,
+      userAgent,
+    });
     return NextResponse.json(
-      { error: "Terjadi kesalahan server. Silakan coba lagi nanti." },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
