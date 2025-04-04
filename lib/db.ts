@@ -7,11 +7,18 @@ const pool = mysql.createPool({
   user: process.env.AIVEN_MYSQL_USER,
   password: process.env.AIVEN_MYSQL_PASSWORD,
   database: process.env.AIVEN_MYSQL_DB_NAME,
-  ssl: {
-    rejectUnauthorized: true,
-    ca: Buffer.from(process.env.AIVEN_CA_CERT || "", "base64").toString(),
-    minVersion: "TLSv1.2",
-  },
+  ssl:
+    process.env.NODE_ENV === "production"
+      ? {
+          rejectUnauthorized: false, // Perubahan ini memungkinkan sertifikat self-signed
+          ca: Buffer.from(process.env.AIVEN_CA_CERT || "", "base64").toString(),
+          minVersion: "TLSv1.2",
+        }
+      : {
+          rejectUnauthorized: true,
+          ca: Buffer.from(process.env.AIVEN_CA_CERT || "", "base64").toString(),
+          minVersion: "TLSv1.2",
+        },
   waitForConnections: true,
   connectionLimit: 10,
 });
