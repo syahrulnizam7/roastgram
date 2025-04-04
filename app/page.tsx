@@ -217,12 +217,29 @@ export default function Home() {
 
       // Update roast count with error handling
       try {
+        // Dapatkan token captcha baru khusus untuk update-roast-count
+        let newCaptchaToken = "";
+        try {
+          newCaptchaToken = await window.grecaptcha.execute(
+            process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!,
+            { action: "update_roast" } // Gunakan action berbeda
+          );
+        } catch (captchaError) {
+          console.error(
+            "Failed to execute reCAPTCHA for update:",
+            captchaError
+          );
+          throw new Error(
+            "Gagal memverifikasi keamanan untuk update. Silakan coba lagi."
+          );
+        }
+
         const updateResponse = await fetch("/api/update-roast-count", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             username,
-            captchaToken,
+            captchaToken: newCaptchaToken, // Gunakan token baru
             clientInfo: {
               userAgent: navigator.userAgent,
               screenResolution: `${window.screen.width}x${window.screen.height}`,
