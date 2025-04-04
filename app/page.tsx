@@ -14,6 +14,7 @@ import { LoadingOverlay } from "./components/loading-overlay";
 import { useTheme } from "./hooks/use-theme";
 import { BackgroundPattern } from "./components/background-pattern";
 import { DecorationElements } from "./components/decoration-elements";
+import Adbanner from "./components/AdBanner";
 import Footer from "./components/footer";
 
 export default function Home() {
@@ -296,6 +297,7 @@ export default function Home() {
       </div>
 
       <Footer />
+      <Adbanner />
     </main>
   );
 }
