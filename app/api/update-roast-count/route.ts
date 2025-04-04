@@ -7,31 +7,21 @@ export async function POST(request: Request) {
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   const userAgent = request.headers.get("user-agent") || "unknown";
+  const contentType = request.headers.get("content-type");
+
+  // 1. Validasi Content-Type
+  if (contentType !== "application/json") {
+    console.warn("Invalid Content-Type", { ip, userAgent });
+    return NextResponse.json(
+      { error: "Content-Type must be application/json" },
+      { status: 400 }
+    );
+  }
 
   try {
-    // Validasi awal request
-    if (request.headers.get("content-type") !== "application/json") {
-      return NextResponse.json(
-        { error: "Invalid content type" },
-        { status: 400 }
-      );
-    }
-    // Parse request body
-    const body = await request.json().catch(() => null);
-    if (!body) {
-      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-    }
-
+    // 2. Parse body
+    const body = await request.json();
     const { username, captchaToken } = body;
-
-    // Log lebih informatif
-    console.log("Request Details:", {
-      ip,
-      userAgent,
-      username: username ? `${username.substring(0, 3)}...` : "missing",
-      hasToken: !!captchaToken,
-      timestamp: new Date().toISOString(),
-    });
 
     if (!username || typeof username !== "string") {
       return NextResponse.json(
@@ -40,43 +30,33 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate username pattern
-    if (/loop\d+/i.test(username) || username.length > 30) {
-      return NextResponse.json(
-        { error: "Format username tidak diizinkan" },
-        { status: 403 }
-      );
-    }
-
-    // Verify CAPTCHA (skip in non-production)
-    let captchaValid = process.env.NODE_ENV !== "production";
-    let captchaMessage = "Non-production mode - skipping captcha";
-
-    // Validasi CAPTCHA lebih ketat
+    // 3. Validasi CAPTCHA (wajib di production)
     if (process.env.NODE_ENV === "production") {
       if (!captchaToken) {
-        console.warn("Missing CAPTCHA Token - Possible Bot Attack", {
+        console.warn("CAPTCHA Token Missing - Potential Bot Attack", {
           ip,
           userAgent,
           username,
+          timestamp: new Date().toISOString(),
         });
         return NextResponse.json(
           {
-            error: "Security verification required",
-            details: "CAPTCHA token is missing",
+            error: "Security verification failed",
+            details: "CAPTCHA token is required",
           },
           { status: 403 }
         );
       }
 
       const captchaResult = await verifyCaptcha(captchaToken);
-      if (!captchaResult.success) {
-        console.error("CAPTCHA Verification Failed", {
+      if (!captchaResult.success || captchaResult.action !== "update_roast") {
+        console.warn("CAPTCHA Verification Failed", {
           ip,
           userAgent,
           username,
           reason: captchaResult.message,
-          // errorCodes: captchaResult.errorCodes, // Removed as it does not exist on the type
+          score: captchaResult.score,
+          action: captchaResult.action,
         });
         return NextResponse.json(
           {
@@ -88,44 +68,45 @@ export async function POST(request: Request) {
       }
     }
 
-    // Check rate limit
-    const isAllowed = await rateLimiter(ip, captchaValid);
-    if (!isAllowed) {
+    // 4. Validasi pola username
+    const usernamePattern = /^[a-z0-9._]{3,30}$/;
+    if (!usernamePattern.test(username)) {
+      return NextResponse.json(
+        { error: "Format username tidak valid" },
+        { status: 400 }
+      );
+    }
+
+    // 5. Rate Limiting
+    const isRateLimited = await rateLimiter(ip, true);
+    if (!isRateLimited) {
       return NextResponse.json(
         { error: "Terlalu banyak request. Coba lagi nanti." },
         { status: 429 }
       );
     }
 
-    // Execute database query
-    const [rows]: any = await pool.query(
-      `INSERT INTO roasted_users (username, roast_count) 
-       VALUES (?, 1)
+    // 6. Eksekusi query database
+    const result = await pool.query(
+      `INSERT INTO roasted_users (username, roast_count, last_ip, user_agent) 
+       VALUES (?, 1, ?, ?)
        ON DUPLICATE KEY UPDATE 
        roast_count = roast_count + 1, 
-       last_roasted_at = CURRENT_TIMESTAMP`,
-      [username]
+       last_roasted_at = CURRENT_TIMESTAMP,
+       last_ip = VALUES(last_ip),
+       user_agent = VALUES(user_agent)`,
+      [username, ip, userAgent]
     );
 
-    return NextResponse.json(
-      {
-        success: true,
-        totalRoasts: rows.affectedRows,
-        captcha: {
-          verified: captchaValid,
-          message: captchaMessage,
-        },
+    return NextResponse.json({
+      success: true,
+      data: {
+        username,
+        affectedRows: (result as any).affectedRows || 0, // Cast to any or adjust based on actual type
       },
-      {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
-        },
-      }
-    );
+    });
   } catch (error) {
-    console.error("API Error:", {
+    console.error("Database Error:", {
       error: error instanceof Error ? error.message : "Unknown error",
       stack: error instanceof Error ? error.stack : undefined,
       ip,
