@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import { rateLimiter } from "@/lib/rate-limiter";
+import { verifyCaptcha } from "@/lib/recaptcha";
 
 export async function POST(request: Request) {
   // Dapatkan IP pengguna
@@ -17,7 +18,14 @@ export async function POST(request: Request) {
   }
 
   // Validasi input
-  const { username } = await request.json();
+  const { username, captchaToken } = await request.json();
+  const isCaptchaValid = await verifyCaptcha(captchaToken);
+  if (!isCaptchaValid) {
+    return NextResponse.json(
+      { error: "Verifikasi captcha gagal" },
+      { status: 403 }
+    );
+  }
   if (!username || typeof username !== "string") {
     return NextResponse.json(
       { error: "Username harus berupa string" },

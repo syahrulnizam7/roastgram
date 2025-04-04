@@ -1,13 +1,24 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-// Konfigurasi rate limit (contoh: 5 request per 10 detik per IP)
+// Lebih ketat untuk request yang mencurigakan
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(5, "10 s"),
+  limiter: Ratelimit.slidingWindow(3, "60 s"), // 3 request per menit
 });
 
-export async function rateLimiter(ip: string) {
-  const { success } = await ratelimit.limit(ip);
-  return success;
+// Rate limit khusus untuk request tanpa captcha yang valid
+const strictRatelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(1, "60 s"), // 1 request per menit
+});
+
+export async function rateLimiter(ip: string, hasValidCaptcha: boolean) {
+  if (hasValidCaptcha) {
+    const { success } = await ratelimit.limit(ip);
+    return success;
+  } else {
+    const { success } = await strictRatelimit.limit(ip);
+    return success;
+  }
 }

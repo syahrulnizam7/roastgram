@@ -117,6 +117,11 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Generate token reCAPTCHA
+    const token = await window.grecaptcha.execute(
+      process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
+      { action: "submit" }
+    );
     // Validasi input kosong
     if (!username.trim()) {
       setError("Masukkan username terlebih dahulu");
@@ -165,7 +170,7 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username, captchaToken: token }),
       });
 
       if (!scrapeResponse.ok) {
@@ -224,7 +229,7 @@ export default function Home() {
     const updateResponse = await fetch("/api/update-roast-count", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username }),
+      body: JSON.stringify({ username, captchaToken: token }),
     });
 
     if (!updateResponse.ok) {

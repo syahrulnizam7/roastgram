@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server";
 import { scrapeInstagramProfile } from "@/lib/api";
+import { verifyCaptcha } from "@/lib/recaptcha";
 
 export async function POST(request: Request) {
-  const { username } = await request.json();
+  const { username, captchaToken } = await request.json();
 
+  // Verifikasi reCAPTCHA
+  const isCaptchaValid = await verifyCaptcha(captchaToken);
+  if (!isCaptchaValid) {
+    return NextResponse.json(
+      { error: "Verifikasi captcha gagal" },
+      { status: 403 }
+    );
+  }
   try {
     // Scrape profile Instagram
     const profile = await scrapeInstagramProfile(username);

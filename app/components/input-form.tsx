@@ -37,6 +37,23 @@ export function InputForm({
   );
   const [validationError, setValidationError] = useState<string | null>(null);
 
+  const handleSubmitWithCaptcha = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      // Generate token reCAPTCHA
+      const token = await window.grecaptcha.execute(
+        process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
+        { action: "submit" }
+      );
+
+      // Panggil handleSubmit original dengan token
+      await handleSubmit(e);
+    } catch (error) {
+      setValidationError("Gagal verifikasi captcha. Coba lagi.");
+    }
+  };
+
   // Fungsi untuk mengambil total roasted dari API
   useEffect(() => {
     const fetchTotalRoasted = async () => {
@@ -161,7 +178,10 @@ export function InputForm({
         }}
       >
         <div className="p-4 md:p-8">
-          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+          <form
+            onSubmit={handleSubmitWithCaptcha}
+            className="space-y-4 md:space-y-6"
+          >
             <div className="flex flex-col space-y-2 md:space-y-3">
               <label
                 htmlFor="username"
