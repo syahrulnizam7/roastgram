@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 
   // Cek rate limit
-  const isAllowed = await rateLimiter(ip);
+  const isAllowed = await rateLimiter(ip, true); // Assuming captcha is valid at this point
   if (!isAllowed) {
     return NextResponse.json(
       { error: "Terlalu banyak request. Coba lagi nanti." },
