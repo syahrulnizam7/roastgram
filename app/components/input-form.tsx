@@ -35,6 +35,8 @@ export function InputForm({
   const [totalRoastedError, setTotalRoastedError] = useState<string | null>(
     null
   );
+  const [validationError, setValidationError] = useState<string | null>(null);
+
   // Fungsi untuk mengambil total roasted dari API
   useEffect(() => {
     const fetchTotalRoasted = async () => {

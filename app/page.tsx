@@ -116,6 +116,14 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validasi input kosong
+    if (!username.trim()) {
+      setError("Masukkan username terlebih dahulu");
+      return;
+    }
+
+    setError(null);
+
     // Cek apakah pengguna sudah mencapai limit scraping (2x/10 menit)
     const scrapeCountData = getScrapeCountFromLocalStorage();
     if (
