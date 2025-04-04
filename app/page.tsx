@@ -117,11 +117,6 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Generate token reCAPTCHA
-    const token = await window.grecaptcha.execute(
-      process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
-      { action: "submit" }
-    );
     // Validasi input kosong
     if (!username.trim()) {
       setError("Masukkan username terlebih dahulu");
@@ -147,6 +142,19 @@ export default function Home() {
       setLoading(true);
       setStage("scraping");
 
+      // Get reCAPTCHA token
+      let captchaToken = "";
+      try {
+        captchaToken = await window.grecaptcha.execute(
+          process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!,
+          { action: "submit" }
+        );
+      } catch (captchaError) {
+        console.error("Failed to execute reCAPTCHA:", captchaError);
+        throw new Error(
+          "Gagal memverifikasi keamanan. Silakan refresh halaman dan coba lagi."
+        );
+      }
       // Cek apakah hasil roasting sudah ada di localStorage
       const existingRoast = getRoastFromLocalStorage(username);
       if (existingRoast && Date.now() - existingRoast.timestamp < 600000) {
@@ -167,10 +175,8 @@ export default function Home() {
       // Scrape profile
       const scrapeResponse = await fetch("/api/scrape", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, captchaToken: token }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, captchaToken }),
       });
 
       if (!scrapeResponse.ok) {
@@ -209,6 +215,21 @@ export default function Home() {
       const timeLeft = 600; // 10 menit dalam detik
       setTimeLeft(timeLeft);
 
+      // Update roast count with error handling
+      try {
+        const updateResponse = await fetch("/api/update-roast-count", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, captchaToken }),
+        });
+
+        if (!updateResponse.ok) {
+          const errorData = await updateResponse.json();
+          console.error("Failed to update roast count:", errorData);
+        }
+      } catch (updateError) {
+        console.error("Error updating roast count:", updateError);
+      }
       // Beritahu pengguna bahwa hasil roasting akan direset setelah 10 menit
       setTimeout(() => {
         localStorage.removeItem(`roast_${username}`);
@@ -223,17 +244,6 @@ export default function Home() {
       setError(error instanceof Error ? error.message : "Terjadi kesalahan");
     } finally {
       setLoading(false);
-    }
-
-    // Setelah mendapatkan roastText:
-    const updateResponse = await fetch("/api/update-roast-count", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, captchaToken: token }),
-    });
-
-    if (!updateResponse.ok) {
-      console.error("Gagal update total roasted");
     }
   };
 
