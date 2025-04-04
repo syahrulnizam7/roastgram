@@ -340,7 +340,6 @@ export default function Home() {
       </div>
 
       <Footer />
-      <Adbanner />
     </main>
   );
 }
