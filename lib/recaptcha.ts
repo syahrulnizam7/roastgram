@@ -4,8 +4,8 @@ export async function verifyCaptcha(token: string): Promise<{
   score?: number;
 }> {
   // Skip verification in development
-  if (process.env.NODE_ENV === "development") {
-    console.log("Development mode - skipping captcha verification");
+  if (process.env.NODE_ENV !== "production") {
+    console.log("Non-production mode - skipping captcha verification");
     return { success: true, score: 0.9 };
   }
 
@@ -32,10 +32,15 @@ export async function verifyCaptcha(token: string): Promise<{
       }),
     });
 
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const data = await response.json();
 
+    console.log("reCAPTCHA verification response:", data);
+
     if (!data.success) {
-      console.error("reCAPTCHA verification failed:", data);
       return {
         success: false,
         message: data["error-codes"]?.join(", ") || "Verification failed",

@@ -220,13 +220,24 @@ export default function Home() {
         const updateResponse = await fetch("/api/update-roast-count", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, captchaToken }),
+          body: JSON.stringify({
+            username,
+            captchaToken,
+            clientInfo: {
+              userAgent: navigator.userAgent,
+              screenResolution: `${window.screen.width}x${window.screen.height}`,
+            },
+          }),
         });
 
         if (!updateResponse.ok) {
           const errorData = await updateResponse.json();
           console.error("Failed to update roast count:", errorData);
+          throw new Error(errorData.error || "Gagal memperbarui jumlah roast");
         }
+
+        const result = await updateResponse.json();
+        console.log("Update roast count success:", result);
       } catch (updateError) {
         console.error("Error updating roast count:", updateError);
       }

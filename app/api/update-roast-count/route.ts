@@ -12,6 +12,12 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { username, captchaToken } = body;
 
+    console.log("Incoming request from IP:", ip);
+    console.log("Request body:", {
+      username,
+      captchaToken: captchaToken ? "exists" : "missing",
+    });
+
     if (!username || typeof username !== "string") {
       return NextResponse.json(
         { error: "Username harus berupa string" },
@@ -27,21 +33,26 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify CAPTCHA (skip in development)
-    let captchaValid = true;
-    let captchaMessage = "Development mode - skipping captcha";
+    // Verify CAPTCHA (skip in non-production)
+    let captchaValid = process.env.NODE_ENV !== "production";
+    let captchaMessage = "Non-production mode - skipping captcha";
 
-    if (process.env.NODE_ENV !== "development") {
+    if (process.env.NODE_ENV === "production") {
       const captchaResult = await verifyCaptcha(captchaToken);
       captchaValid = captchaResult.success;
       captchaMessage = captchaResult.message || "Captcha verification";
 
+      console.log("Captcha verification result:", {
+        captchaValid,
+        captchaMessage,
+      });
+
       if (!captchaValid) {
-        console.log(
-          `Captcha failed for ${username} (IP: ${ip}): ${captchaMessage}`
-        );
         return NextResponse.json(
-          { error: "Verifikasi keamanan gagal. Silakan coba lagi." },
+          {
+            error: "Verifikasi keamanan gagal. Silakan coba lagi.",
+            details: captchaMessage,
+          },
           { status: 403 }
         );
       }
@@ -66,14 +77,23 @@ export async function POST(request: Request) {
       [username]
     );
 
-    return NextResponse.json({
-      success: true,
-      totalRoasts: rows.affectedRows,
-      captcha: {
-        verified: captchaValid,
-        message: captchaMessage,
+    return NextResponse.json(
+      {
+        success: true,
+        totalRoasts: rows.affectedRows,
+        captcha: {
+          verified: captchaValid,
+          message: captchaMessage,
+        },
       },
-    });
+      {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+      }
+    );
   } catch (error) {
     console.error("Database error:", error);
     return NextResponse.json(
