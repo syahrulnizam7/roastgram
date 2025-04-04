@@ -1,24 +1,27 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 
+export const dynamic = "force-dynamic"; // Important for Vercel
+
 export async function GET() {
-  let connection;
   try {
-    connection = await pool.getConnection();
+    const connection = await pool.getConnection();
 
-    // Test koneksi
-    await connection.ping();
+    try {
+      await connection.ping();
+      const [rows]: any = await connection.query(
+        "SELECT SUM(roast_count) as total FROM roasted_users"
+      );
 
-    const [rows]: any = await connection.query(
-      "SELECT SUM(roast_count) as total FROM roasted_users"
-    );
-
-    return NextResponse.json({
-      success: true,
-      total: rows[0]?.total || 0,
-    });
+      return NextResponse.json({
+        success: true,
+        total: rows[0]?.total || 0,
+      });
+    } finally {
+      connection.release();
+    }
   } catch (error: any) {
-    console.error("Database error details:", {
+    console.error("Database error:", {
       message: error.message,
       code: error.code,
       stack: error.stack,
@@ -28,11 +31,10 @@ export async function GET() {
       {
         success: false,
         error: "Database connection failed",
-        details: error.message,
+        details:
+          process.env.NODE_ENV === "development" ? error.message : undefined,
       },
       { status: 500 }
     );
-  } finally {
-    if (connection) connection.release();
   }
 }
