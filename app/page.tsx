@@ -117,8 +117,24 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validasi input kosong
     if (!username.trim()) {
       setError("Masukkan username terlebih dahulu");
+      return;
+    }
+
+    setError(null);
+
+    // Cek apakah pengguna sudah mencapai limit scraping (2x/10 menit)
+    const scrapeCountData = getScrapeCountFromLocalStorage();
+    if (
+      scrapeCountData &&
+      scrapeCountData.count >= 2 &&
+      Date.now() - scrapeCountData.timestamp < 600000
+    ) {
+      setError(
+        "Limit roasting anda tercapai (2x/10 menit). Coba lagi nanti!(  •̀⤙•́  )"
+      );
       return;
     }
 
@@ -126,20 +142,41 @@ export default function Home() {
       setLoading(true);
       setStage("scraping");
 
-      // 1. Dapatkan CAPTCHA token untuk proses scraping
-      const scrapeCaptchaToken = await window.grecaptcha.execute(
-        process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!,
-        { action: "scrape" }
-      );
+      // Get reCAPTCHA token
+      let captchaToken = "";
+      try {
+        captchaToken = await window.grecaptcha.execute(
+          process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!,
+          { action: "submit" }
+        );
+      } catch (captchaError) {
+        console.error("Failed to execute reCAPTCHA:", captchaError);
+        throw new Error(
+          "Gagal memverifikasi keamanan. Silakan refresh halaman dan coba lagi."
+        );
+      }
+      // Cek apakah hasil roasting sudah ada di localStorage
+      const existingRoast = getRoastFromLocalStorage(username);
+      if (existingRoast && Date.now() - existingRoast.timestamp < 600000) {
+        // Jika hasil roasting masih valid (kurang dari 10 menit), gunakan data yang ada
+        setRoast(existingRoast.roast);
+        setProfileData(existingRoast.profile);
+        setShowResults(true);
 
-      // 2. Lakukan scraping dengan CAPTCHA token
+        // Hitung waktu tersisa sebelum reset
+        const timeLeft = Math.ceil(
+          (600000 - (Date.now() - existingRoast.timestamp)) / 1000
+        );
+        setTimeLeft(timeLeft);
+        return;
+      }
+
+      // Jika hasil roasting tidak ada atau sudah kadaluarsa, lakukan scraping baru
+      // Scrape profile
       const scrapeResponse = await fetch("/api/scrape", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username,
-          captchaToken: scrapeCaptchaToken,
-        }),
+        body: JSON.stringify({ username, captchaToken }),
       });
 
       if (!scrapeResponse.ok) {
@@ -149,11 +186,13 @@ export default function Home() {
 
       const { profile } = await scrapeResponse.json();
 
-      // 3. Generate roast (tanpa CAPTCHA karena sudah divalidasi di scraping)
+      // Generate roast
       setStage("roasting");
       const roastResponse = await fetch("/api/roast", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ username, profile }),
       });
 
@@ -163,39 +202,63 @@ export default function Home() {
 
       const { roast: roastText } = await roastResponse.json();
 
-      // 4. Set state dan simpan ke localStorage
+      // Set hasil
       setProfileData(profile);
       setRoast(roastText);
       setShowResults(true);
+
+      // Simpan hasil roasting dan data profil ke localStorage
       saveRoastToLocalStorage(username, roastText, profile);
       saveScrapeCountToLocalStorage();
-      setTimeLeft(600);
 
-      // 5. Hanya update roast count JIKA semua proses sebelumnya berhasil
-      const updateCaptchaToken = await window.grecaptcha.execute(
-        process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!,
-        { action: "update_roast" }
-      );
+      // Hitung waktu tersisa sebelum reset
+      const timeLeft = 600; // 10 menit dalam detik
+      setTimeLeft(timeLeft);
 
-      const updateResponse = await fetch("/api/update-roast-count", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username,
-          captchaToken: updateCaptchaToken,
-          clientInfo: {
-            userAgent: navigator.userAgent,
-            screenResolution: `${window.screen.width}x${window.screen.height}`,
-          },
-        }),
-      });
+      // Update roast count with error handling
+      try {
+        // Dapatkan token captcha baru khusus untuk update-roast-count
+        let newCaptchaToken = "";
+        try {
+          newCaptchaToken = await window.grecaptcha.execute(
+            process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!,
+            { action: "update_roast" } // Gunakan action berbeda
+          );
+        } catch (captchaError) {
+          console.error(
+            "Failed to execute reCAPTCHA for update:",
+            captchaError
+          );
+          throw new Error(
+            "Gagal memverifikasi keamanan untuk update. Silakan coba lagi."
+          );
+        }
 
-      if (!updateResponse.ok) {
-        const errorData = await updateResponse.json();
-        console.warn("Peringatan: Gagal update roast count", errorData);
+        const updateResponse = await fetch("/api/update-roast-count", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username,
+            captchaToken: newCaptchaToken, // Gunakan token baru
+            clientInfo: {
+              userAgent: navigator.userAgent,
+              screenResolution: `${window.screen.width}x${window.screen.height}`,
+            },
+          }),
+        });
+
+        if (!updateResponse.ok) {
+          const errorData = await updateResponse.json();
+          console.error("Failed to update roast count:", errorData);
+          throw new Error(errorData.error || "Gagal memperbarui jumlah roast");
+        }
+
+        const result = await updateResponse.json();
+        console.log("Update roast count success:", result);
+      } catch (updateError) {
+        console.error("Error updating roast count:", updateError);
       }
-
-      // Timer reset
+      // Beritahu pengguna bahwa hasil roasting akan direset setelah 10 menit
       setTimeout(() => {
         localStorage.removeItem(`roast_${username}`);
         setRoast(null);
@@ -203,11 +266,10 @@ export default function Home() {
         setUsername("");
         setShowResults(false);
         setError("Hasil roasting telah direset. Silakan coba lagi.");
-        setTimeLeft(null);
-      }, 600000);
+        setTimeLeft(null); // Reset waktu tersisa
+      }, 600000); // 10 menit dalam milidetik
     } catch (error) {
       setError(error instanceof Error ? error.message : "Terjadi kesalahan");
-      console.error("Error during submission:", error);
     } finally {
       setLoading(false);
     }
