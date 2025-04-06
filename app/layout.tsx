@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import ReCaptchaProvider from "./components/recaptcha-provider";
-import Adsterra from "./components/SocialBarAd";
+import Adsterra from "./components/Adsterra";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
