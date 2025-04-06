@@ -3,8 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import ReCaptchaProvider from "./components/recaptcha-provider";
-import AdsterraBanner from "./components/AdsterraBanner";
-
+import AdsterraBanner from "./components/AdsterraHorizontalBanner";
+import AdsterraPopUnder from "./components/AdsterraPopUnder";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -78,6 +78,7 @@ export default function RootLayout({
           {children}
           <Analytics />
           <AdsterraBanner />
+          <AdsterraPopUnder />
         </ReCaptchaProvider>
       </body>
     </html>
