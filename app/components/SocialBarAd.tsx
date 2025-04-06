@@ -5,7 +5,7 @@ export default function SocialBarAd() {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true); // Pastikan ini hanya dijalankan di client-side
+    setIsClient(true);
 
     if (process.env.NODE_ENV !== "production") return;
 
