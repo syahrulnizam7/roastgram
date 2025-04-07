@@ -46,6 +46,6 @@ Roastgram adalah sebuah aplikasi berbasis web yang dapat memberikan roasting sar
 ## 📫 Kontak
 
 - 📧 **Email**: syhrulnizm7@gmail.com
-- 📸 **Instagram**: [@alangkun](https://instagram.com/alangkun)
+- 📸 **Instagram**: [@alang.kun](https://instagram.com/alang.kun)
 
 Terima kasih telah menggunakan Roastgram! 🚀🔥
