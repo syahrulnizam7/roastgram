@@ -338,7 +338,7 @@ export default function Home() {
       </div>
 
       <Footer />
-      <Adbanner />
+      {/* <Adbanner /> */}
     </main>
   );
 }

@@ -95,7 +95,7 @@ export default function RootLayout({
         <ReCaptchaProvider>
           {children}
           <Analytics />
-          <Adsterra />
+          {/* <Adsterra /> */}
         </ReCaptchaProvider>
       </body>
     </html>
