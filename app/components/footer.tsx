@@ -27,13 +27,16 @@ export default function Footer() {
 
   return (
     <footer className={`w-full py-6 px-4 flex items-center justify-between`}>
-      <p
+      <a
+        href="https://bio.alangkun.my.id"
+        target="_blank"
+        rel="noopener noreferrer"
         className={`text-sm font-bold ${
           darkMode ? "text-white" : "text-black"
         }`}
       >
         by alangkun
-      </p>
+      </a>
 
       <div className="flex gap-2">
         <a
