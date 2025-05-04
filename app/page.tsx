@@ -129,7 +129,7 @@ export default function Home() {
     const scrapeCountData = getScrapeCountFromLocalStorage();
     if (
       scrapeCountData &&
-      scrapeCountData.count >= 2 &&
+      scrapeCountData.count >= 3 &&
       Date.now() - scrapeCountData.timestamp < 600000
     ) {
       setError(
