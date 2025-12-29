@@ -1,4 +1,5 @@
 import { ApifyClient } from "apify-client";
+import { GoogleGenAI } from "@google/genai";
 import { InstagramProfile } from "@/types";
 
 const APIFY_API_TOKEN = process.env.APIFY_API_TOKEN || "";
@@ -105,47 +106,26 @@ export async function generateRoast(
   // Function to try generating roast with a specific API key
   const tryGenerateRoast = async (apiKey: string): Promise<string> => {
     try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text: `Berikan roasting sarkastik, kejam, dan menyindir secara lucu (tapi tidak terlalu kasar) untuk profil Instagram "${username}" ini. 
+      const ai = new GoogleGenAI({ apiKey });
+
+      const prompt = `Berikan roasting sarkastik, kejam, dan menyindir secara lucu (tapi tidak terlalu kasar) untuk profil Instagram "${username}" ini. 
                     
                     PENTING: Berikan HANYA teks roasting, tanpa kata pengantar atau pembuka apapun seperti "Oke, siap" atau "Berikut roasting untuk". Langsung mulai dengan roastingnya.
                     sesekali gunakan emoticon.
                     Gunakan **gaya sarkastik dan menyakitkan** sampai kena mental,
                     Gunakan Bahasa Gaul, boleh menggunakan kata kata kasar tapi jangan berlebihan,
                     gunakan kata kata yang bisa dipahami.
-                    Boleh menyindir jumlah followers, postingan, bio, gaya foto, atau apapun yang relevan berdasarkan data berikut: ${profileDataString}`,
-                  },
-                ],
-              },
-            ],
-          }),
-        }
+                    Boleh menyindir jumlah followers, postingan, bio, gaya foto, atau apapun yang relevan berdasarkan data berikut: ${profileDataString}`;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+      });
+
+      return (
+        response.text ||
+        "Maaf, tidak dapat membuat roast untuk profil ini saat ini."
       );
-
-      if (!response.ok) {
-        throw new Error(
-          `Gagal mendapatkan respon dari Gemini API: ${response.statusText}`
-        );
-      }
-
-      const data = await response.json();
-
-      const generatedText =
-        data.candidates?.[0]?.content?.parts?.[0]?.text ||
-        "Maaf, tidak dapat membuat roast untuk profil ini saat ini.";
-
-      return generatedText;
     } catch (error) {
       console.error("Error generating roast with API key:", apiKey, error);
       throw error;
